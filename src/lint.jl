@@ -43,3 +43,23 @@ function find_ref(f, offset)
     end
     return nothing
 end
+
+function find_unused_bindings(doc, server)
+    state = build_bindings(server, doc.code) 
+    refs = cat_references(server, doc.code)
+    rref = []
+    uref = []
+    resolve_refs(refs, state, rref, uref)
+    unused = []
+    for (n,bs) in state.bindings
+        for b in bs
+            for r in rref
+                if r.b == b
+                    break
+                end
+            end
+            push!(unused, b)
+        end
+    end
+    return unused
+end
