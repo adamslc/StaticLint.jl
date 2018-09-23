@@ -226,3 +226,21 @@ end
 
 
 Location(state::State) = Location(state.loc.file, state.loc.offset)
+
+
+function collect_bindings(f, index = f.index, syms=  [])
+    if haskey(f.state.bindings, index)
+        for (name, bs) in f.state.bindings[index]
+            for (i, b) in enumerate(bs)
+                if b.val isa CSTParser.AbstractEXPR
+                    if b.val isa CSTParser.EXPR{CSTParser.ModuleH} && !(i > 1 && bs[i - 1].val == b.val)
+                        target_index = add_to_tuple(b.si.i, b.si.n + 1)
+                        collect_bindings(f, target_index, syms)
+                    end
+                    push!(syms, (name,b))
+                end
+            end
+        end
+    end
+    return syms
+end
